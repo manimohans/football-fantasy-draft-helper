@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NFL Fantasy Draft Board Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=Roboto:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #0c1219;
+            color: #e0e0e0;
+            margin: 0;
+            padding: 0;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(91, 194, 54, 0.05) 0%, transparent 20%),
+                radial-gradient(circle at 90% 80%, rgba(7, 82, 154, 0.05) 0%, transparent 20%);
+            background-attachment: fixed;
+        }
+        .header {
+            background-color: #1c2630;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+        }
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            margin: 0;
+            font-size: 2.5em;
+            color: #4CAF50;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+        #undoButton {
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 5px;
+            margin: 20px;
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 10px rgba(33, 150, 243, 0.5);
+        }
+        #undoButton:hover {
+            background-color: #1976D2;
+            transform: scale(1.05);
+            box-shadow: 0 0 20px rgba(33, 150, 243, 0.7);
+        }
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+            max-width: 100%;
+            margin: 0 auto;
+            overflow-x: auto;
+        }
+        .column {
+            background-color: #1c2630;
+            border-radius: 10px;
+            padding: 15px;
+            width: 18%;
+            min-width: 200px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        .column:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+        .column h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #4CAF50;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 10px;
+            margin-top: 0;
+            text-align: center;
+            font-size: 1.2em;
+        }
+        .item {
+            background-color: #2c3e50;
+            border: 1px solid #34495e;
+            border-radius: 5px;
+            padding: 8px;
+            margin: 8px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.9em;
+        }
+        .item:hover {
+            background-color: #34495e;
+            transform: translateX(5px);
+            box-shadow: -3px 0 10px rgba(76, 175, 80, 0.3);
+        }
+        @media (max-width: 1200px) {
+            .container {
+                justify-content: flex-start;
+            }
+            .column {
+                flex-shrink: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>NFL Fantasy Draft Board Pro</h1>
+    </div>
+    <button id="undoButton" onclick="undoRemoval()">Undo Last Pick</button>
+    <div class="container">
+        {% for column in ['QB', 'RB', 'WR', 'TE', 'DST'] %}
+        <div class="column">
+            <h2>{{ column }}</h2>
+            {% for item in data[column] %}
+            <div class="item" onclick="removeItem('{{ column }}', '{{ item }}')">{{ item }}</div>
+            {% endfor %}
+        </div>
+        {% endfor %}
+    </div>
+
+    <script>
+        const columnOrder = ['QB', 'RB', 'WR', 'TE', 'DST'];
+
+        function removeItem(column, item) {
+            fetch('/remove_item', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ column, item }),
+            }).then(() => {
+                updateUI();
+            });
+        }
+
+        function undoRemoval() {
+            fetch('/undo', {
+                method: 'POST',
+            }).then(response => response.json())
+            .then(data => {
+                updateUI(data.data);
+            });
+        }
+
+        function updateUI(newData) {
+            if (newData) {
+                const container = document.querySelector('.container');
+                container.innerHTML = '';
+                columnOrder.forEach(column => {
+                    const columnDiv = document.createElement('div');
+                    columnDiv.className = 'column';
+                    columnDiv.innerHTML = `<h2>${column}</h2>`;
+                    if (newData[column]) {
+                        newData[column].forEach(item => {
+                            const itemDiv = document.createElement('div');
+                            itemDiv.className = 'item';
+                            itemDiv.textContent = item;
+                            itemDiv.onclick = () => removeItem(column, item);
+                            columnDiv.appendChild(itemDiv);
+                        });
+                    }
+                    container.appendChild(columnDiv);
+                });
+            } else {
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>
