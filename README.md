@@ -1,5 +1,7 @@
 # NFL Fantasy Draft Board
 
+![alt text](image.png)
+
 ## Description
 
 This application is a web-based tool for managing player selections during fantasy football drafts. It uses Python with Flask for the backend and standard HTML/CSS/JavaScript for the frontend. The interface displays player rankings in a tabular format, allowing for real-time updates as selections are made.
