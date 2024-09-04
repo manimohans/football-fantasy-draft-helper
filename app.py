@@ -62,7 +62,7 @@ def remove_item():
         index = data[column].index(item)
         data[column].remove(item)
         removed_items.append((column, item, index))
-    return jsonify(success=True)
+    return jsonify(data=data)  # Return updated data
 
 @app.route('/undo', methods=['POST'])
 def undo():
@@ -72,7 +72,11 @@ def undo():
             data[column].insert(index, item)
         else:
             data[column].append(item)
-    return jsonify(data=dict(data))
+    return jsonify(data=data)  # Return updated data
+
+@app.route('/get_data', methods=['GET'])
+def get_data():
+    return jsonify(data=data)
 
 if __name__ == '__main__':
     app.run(debug=True)

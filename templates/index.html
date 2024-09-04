@@ -132,43 +132,49 @@
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({ column, item }),
-            }).then(() => {
-                updateUI();
+            })
+            .then(response => response.json())
+            .then(data => {
+                updateUI(data.data);
             });
         }
 
         function undoRemoval() {
             fetch('/undo', {
                 method: 'POST',
-            }).then(response => response.json())
+            })
+            .then(response => response.json())
             .then(data => {
                 updateUI(data.data);
             });
         }
 
         function updateUI(newData) {
-            if (newData) {
-                const container = document.querySelector('.container');
-                container.innerHTML = '';
-                columnOrder.forEach(column => {
-                    const columnDiv = document.createElement('div');
-                    columnDiv.className = 'column';
-                    columnDiv.innerHTML = `<h2>${column}</h2>`;
-                    if (newData[column]) {
-                        newData[column].forEach(item => {
-                            const itemDiv = document.createElement('div');
-                            itemDiv.className = 'item';
-                            itemDiv.textContent = item;
-                            itemDiv.onclick = () => removeItem(column, item);
-                            columnDiv.appendChild(itemDiv);
-                        });
-                    }
-                    container.appendChild(columnDiv);
-                });
-            } else {
-                location.reload();
-            }
+            const container = document.querySelector('.container');
+            container.innerHTML = '';
+            columnOrder.forEach(column => {
+                const columnDiv = document.createElement('div');
+                columnDiv.className = 'column';
+                columnDiv.innerHTML = `<h2>${column}</h2>`;
+                if (newData[column]) {
+                    newData[column].forEach(item => {
+                        const itemDiv = document.createElement('div');
+                        itemDiv.className = 'item';
+                        itemDiv.textContent = item;
+                        itemDiv.onclick = () => removeItem(column, item);
+                        columnDiv.appendChild(itemDiv);
+                    });
+                }
+                container.appendChild(columnDiv);
+            });
         }
+
+        // Initial data load
+        fetch('/get_data')
+            .then(response => response.json())
+            .then(data => {
+                updateUI(data.data);
+            });
     </script>
 </body>
 </html>
